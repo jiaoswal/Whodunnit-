@@ -222,6 +222,41 @@ body {
     font-size: 1.5rem;
 }
 
+.case-instructions {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(40, 40, 40, 0.6);
+    border-radius: 8px;
+    border-left: 3px solid #d4af37;
+}
+
+.case-instructions h3 {
+    color: #d4af37;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.case-instructions ul {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.case-instructions li {
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+    line-height: 1.4;
+}
+
+.case-instructions .warning {
+    color: #ff9800;
+    font-weight: bold;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: rgba(255, 152, 0, 0.1);
+    border-radius: 5px;
+    border: 1px solid #ff9800;
+}
+
 /* Game Container */
 .game-container {
     display: grid;
@@ -240,6 +275,14 @@ body {
     text-align: center;
 }
 
+.suspect-instructions {
+    text-align: center;
+    color: #b0b0b0;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
 .suspects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -251,11 +294,15 @@ body {
     background: rgba(30, 30, 30, 0.9);
     border: 2px solid #333;
     border-radius: 10px;
-    padding: 1rem;
+    padding: 1.5rem;
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .suspect-card:hover {
@@ -291,14 +338,63 @@ body {
 
 .suspect-name {
     font-weight: bold;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     color: #e0e0e0;
+}
+
+.suspect-title {
+    font-size: 0.8rem;
+    color: #d4af37;
+    margin-bottom: 0.5rem;
+    font-style: italic;
 }
 
 .suspect-info {
     font-size: 0.9rem;
     color: #b0b0b0;
     line-height: 1.4;
+}
+
+.suspect-portrait {
+    position: relative;
+}
+
+.role-icon {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #d4af37;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: #000;
+    border: 2px solid #333;
+}
+
+.suspect-initial {
+    font-size: 2rem;
+    color: #d4af37;
+    font-weight: bold;
+}
+
+.suspect-role-hint {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+    font-style: italic;
+}
+
+.suspect-visual-hint {
+    font-size: 0.7rem;
+    color: #d4af37;
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid #444;
+    font-style: italic;
 }
 
 /* Game Controls */
@@ -428,6 +524,104 @@ body {
 .modal-buttons .btn-secondary {
     width: auto;
     min-width: 120px;
+}
+
+/* Character Profile Modal */
+.character-profile {
+    max-width: 700px;
+    text-align: left;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #d4af37;
+}
+
+.profile-header h2 {
+    color: #d4af37;
+    margin-bottom: 0.5rem;
+    font-size: 2.2rem;
+}
+
+.profile-header p {
+    color: #b0b0b0;
+    font-size: 1.1rem;
+    font-style: italic;
+    margin-bottom: 0;
+}
+
+.profile-content {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.profile-section h3 {
+    color: #d4af37;
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #555;
+    padding-bottom: 0.25rem;
+}
+
+.profile-section p {
+    color: #e0e0e0;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.profile-clues {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.profile-clue-item {
+    background: rgba(40, 40, 40, 0.6);
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 0.75rem;
+    border-left: 3px solid #d4af37;
+}
+
+.profile-clue-item.revealed {
+    border-left-color: #4caf50;
+}
+
+.profile-clue-item.hidden {
+    border-left-color: #ff9800;
+    opacity: 0.7;
+}
+
+.profile-clue-item.hidden-clue {
+    border-left-color: #ff5722;
+    background: rgba(255, 87, 34, 0.1);
+    border: 2px solid #ff5722;
+}
+
+.profile-clue-item.hidden-clue .profile-clue-text {
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+.profile-clue-item.hidden-clue .profile-clue-status {
+    color: #ff9800;
+    font-weight: bold;
+}
+
+.profile-clue-text {
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.profile-clue-status {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.5rem;
+    font-style: italic;
 }
 
 /* Pause Menu */

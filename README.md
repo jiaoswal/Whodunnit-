@@ -1,6 +1,6 @@
-# Whodunnit - Murder Mystery Game
+# Whodunnit - Rosewood Manor Mystery
 
-A browser-based murder mystery puzzle game built with pure HTML5, CSS, and vanilla JavaScript.
+A browser-based murder mystery puzzle game built with pure HTML5, CSS, and vanilla JavaScript. Solve the murder of Clara Beaumont at Rosewood Manor!
 
 ## Current Status: Step 1 Complete ✅
 
@@ -20,11 +20,13 @@ The project has been successfully scaffolded with all the foundational elements 
 - Form validation and error handling
 
 ### 🕵️ Game Mechanics Foundation
-- **Suspect System**: 5 suspects with randomized characteristics
-  - Unique appearances (hair, skin, clothing)
-  - Different relationships with victim
-  - Various motives and professions
-- **Clue System**: 4 types of clues (Motive, Profession, Appearance, Relationship)
+- **Suspect System**: 5 specific suspects from Rosewood Manor
+  - Mr. Alfred Gray (The Butler)
+  - Dr. Evelyn Cross (The Doctor) - **The Murderer**
+  - James Holloway (The Writer)
+  - Sophie Marlowe (The Childhood Friend)
+  - Victor Kane (The Business Partner)
+- **Clue System**: 25 precise clues (5 per suspect) leading to the killer
 - **Game Actions**: Investigate suspects, draw clue cards, eliminate suspects
 
 ### 🎨 Visual Design

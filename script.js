@@ -25,46 +25,116 @@ let gameState = {
     timerInterval: null
 };
 
-// Suspect Data Structure
+// Rosewood Manor Murder Mystery - Specific Story Data
 const suspectData = {
-    names: [
-        'Dr. Sarah Chen', 'Marcus Rodriguez', 'Eleanor Blackwood', 
-        'James Thompson', 'Isabella Martinez'
-    ],
-    appearances: [
-        { hair: 'Black', style: 'Short', skin: 'Medium', clothing: 'Professional' },
-        { hair: 'Brown', style: 'Wavy', skin: 'Tan', clothing: 'Casual' },
-        { hair: 'Red', style: 'Long', skin: 'Fair', clothing: 'Elegant' },
-        { hair: 'Blonde', style: 'Slicked', skin: 'Fair', clothing: 'Business' },
-        { hair: 'Brown', style: 'Curly', skin: 'Medium', clothing: 'Artistic' }
-    ],
-    relationships: [
-        'Friend', 'Colleague', 'Rival', 'Family', 'Stranger'
-    ],
-    motives: [
-        'Money', 'Revenge', 'Jealousy', 'Career', 'Accident'
-    ],
-    professions: [
-        'Doctor', 'Teacher', 'Business Owner', 'Artist', 'Lawyer'
+    suspects: [
+        {
+            id: 0,
+            name: 'Mr. Alfred Gray',
+            title: 'The Butler',
+            profession: 'Longtime family servant',
+            relationship: 'Worked for the Beaumont family for 25+ years',
+            motive: 'Clara once threatened to fire him for theft',
+            appearance: 'Tall, thin, with a neatly pressed suit and white gloves',
+            hiddenClue: 'His glove has a small wine stain (important later)',
+            isMurderer: false,
+            clues: [
+                'A white glove with a wine stain',
+                'Wine glass near the victim, untouched',
+                'Butler seen carrying only wine, not tea',
+                'Clara never drank wine that night',
+                'Poison was not in the wine'
+            ],
+            eliminationReason: 'His glove had wine on it, but the poison was in the tea cup, not the wine.'
+        },
+        {
+            id: 1,
+            name: 'Dr. Evelyn Cross',
+            title: 'The Doctor',
+            profession: 'Clara\'s physician',
+            relationship: 'Trusted family doctor',
+            motive: 'Clara had discovered malpractice that could ruin her career',
+            appearance: 'Mid-40s, carries a small leather medical bag, spectacles',
+            hiddenClue: 'A missing vial compartment inside her bag',
+            isMurderer: true,
+            clues: [
+                'Missing vial of sedatives',
+                'Clara\'s teacup had traces of that sedative',
+                'Doctor served Clara tea that night',
+                'Medical bag has an empty slot',
+                'Sedatives were only accessible to the Doctor'
+            ],
+            eliminationReason: 'A missing vial of sedatives from her medical bag matches the substance in Clara\'s tea.'
+        },
+        {
+            id: 2,
+            name: 'James Holloway',
+            title: 'The Writer',
+            profession: 'Crime novelist',
+            relationship: 'Clara let him stay at the manor for inspiration',
+            motive: 'Clara planned to expose that his last bestseller copied her family scandal',
+            appearance: 'Messy hair, tweed jacket, notebook and pen always in hand',
+            hiddenClue: 'A sketch in his notebook of the study (with a different glass count)',
+            isMurderer: false,
+            clues: [
+                'Sketchbook drawing of study with 2 wine glasses',
+                'His fingerprints only on wine glasses',
+                'No fingerprints of his on the teapot',
+                'The notebook shows wine stains, not tea',
+                'Witness saw him writing outside the study'
+            ],
+            eliminationReason: 'His sketchbook shows 2 wine glasses in the study, but the poison was in tea, not wine. He didn\'t handle tea at all.'
+        },
+        {
+            id: 3,
+            name: 'Sophie Marlowe',
+            title: 'The Childhood Friend',
+            profession: 'Runs a small antique shop',
+            relationship: 'Grew up with Clara; friends turned rivals',
+            motive: 'Clara refused to loan Sophie money for her failing shop',
+            appearance: 'Elegant dress, pearl necklace, nervous smile',
+            hiddenClue: 'Her necklace is broken, a bead lies on the study floor',
+            isMurderer: false,
+            clues: [
+                'Broken pearl bead in the study',
+                'Necklace broke earlier during a small quarrel',
+                'No fingerprints on tea set',
+                'Motive was financial, not violent',
+                'Pearl bead had dust, showing it fell long before death'
+            ],
+            eliminationReason: 'Her broken necklace bead was in the study before the poisoning, but no fingerprints of hers were on the tea set.'
+        },
+        {
+            id: 4,
+            name: 'Victor Kane',
+            title: 'The Business Partner',
+            profession: 'Co-owned a luxury hotel chain with Clara',
+            relationship: 'Business associate',
+            motive: 'Clara was considering dissolving their partnership',
+            appearance: 'Stocky man in a sharp suit, gold watch, cigar in hand',
+            hiddenClue: 'His cigar stub was found in the garden (not near the study)',
+            isMurderer: false,
+            clues: [
+                'Cigar stub in garden',
+                'Cigar ashes outside confirm location',
+                'Butler saw him pacing in garden',
+                'Time of death confirmed while he was outside',
+                'No trace of poison found on his belongings'
+            ],
+            eliminationReason: 'His cigar stub was found outside in the garden at the exact estimated time of death.'
+        }
     ]
 };
 
-// Clue Types
-const clueTypes = ['Motive', 'Profession', 'Appearance', 'Relationship'];
-
-// Case Descriptions
-const caseDescriptions = [
-    "A wealthy businessman has been found dead in his office. The police suspect foul play, but the evidence is scarce. You must investigate the five people who had access to the victim on the day of the murder.",
-    "A famous actress has been discovered in her dressing room, the victim of what appears to be a carefully planned murder. The suspects include her closest associates and bitter rivals.",
-    "A respected professor has been found dead in the university library. The academic world is in shock, and you must navigate through a web of professional rivalries and personal grudges."
-];
+// Case Description for Rosewood Manor
+const caseDescription = "At Rosewood Manor, the wealthy heiress Clara Beaumont was found dead in her study late at night. She appeared to have been poisoned during a small gathering of close acquaintances. Only five people were present at the manor that night — making them the prime suspects. Your goal: Eliminate suspects through clear clues until only the killer remains.";
 
 // DOM Elements
 let elements = {};
 
 // Initialize the game
 function initGame() {
-    console.log('Initializing Whodunnit...');
+    console.log('Initializing Whodunnit - Rosewood Manor Mystery...');
     
     // Hide loading screen after a brief delay
     setTimeout(() => {
@@ -107,7 +177,7 @@ function initializeElements() {
 function setupEventListeners() {
     // Auth form submissions
     elements.loginForm.addEventListener('submit', handleLogin);
-    elements.registerForm.addEventListener('register', handleRegister);
+    elements.registerForm.addEventListener('submit', handleRegister);
     
     // Guest play
     elements.guestPlay.addEventListener('click', startGuestGame);
@@ -127,6 +197,7 @@ function setupEventListeners() {
     document.getElementById('mainMenuBtn')?.addEventListener('click', showMainMenu);
     document.getElementById('resumeBtn')?.addEventListener('click', resumeGame);
     document.getElementById('quitBtn')?.addEventListener('click', quitToMenu);
+    document.getElementById('closeProfileBtn')?.addEventListener('click', closeCharacterProfile);
     
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboard);
@@ -233,38 +304,19 @@ function startGuestGame() {
 
 // Generate suspects for the current case
 function generateSuspects() {
-    gameState.suspects = [];
+    gameState.suspects = [...suspectData.suspects];
     
-    // Randomly assign characteristics to suspects
-    const shuffledNames = [...suspectData.names].sort(() => Math.random() - 0.5);
-    const shuffledAppearances = [...suspectData.appearances].sort(() => Math.random() - 0.5);
-    const shuffledRelationships = [...suspectData.relationships].sort(() => Math.random() - 0.5);
-    const shuffledMotives = [...suspectData.motives].sort(() => Math.random() - 0.5);
-    const shuffledProfessions = [...suspectData.professions].sort(() => Math.random() - 0.5);
-    
-    // Randomly select the murderer
-    const murdererIndex = Math.floor(Math.random() * 5);
-    
-    for (let i = 0; i < 5; i++) {
-        const suspect = {
-            id: i,
-            name: shuffledNames[i],
-            appearance: shuffledAppearances[i],
-            relationship: shuffledRelationships[i],
-            motive: shuffledMotives[i],
-            profession: shuffledProfessions[i],
-            isMurderer: i === murdererIndex,
-            isEliminated: false,
-            clues: {
-                appearance: false,
-                relationship: false,
-                motive: false,
-                profession: false
-            }
-        };
-        
-        gameState.suspects.push(suspect);
+    // Shuffle the suspects to randomize their positions
+    for (let i = gameState.suspects.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [gameState.suspects[i], gameState.suspects[j]] = [gameState.suspects[j], gameState.suspects[i]];
     }
+    
+    // Reset clue revelation status
+    gameState.suspects.forEach(suspect => {
+        suspect.revealedClues = [];
+        suspect.isEliminated = false;
+    });
     
     renderSuspects();
 }
@@ -282,15 +334,32 @@ function renderSuspects() {
             suspectCard.classList.add('eliminated');
         }
         
+        // Create a visual hint icon based on the suspect's role
+        let roleIcon = '🕵️';
+        if (suspect.title.includes('Butler')) roleIcon = '🧤';
+        if (suspect.title.includes('Doctor')) roleIcon = '🩺';
+        if (suspect.title.includes('Writer')) roleIcon = '📝';
+        if (suspect.title.includes('Friend')) roleIcon = '💎';
+        if (suspect.title.includes('Partner')) roleIcon = '🚬';
+        
         suspectCard.innerHTML = `
-            <div class="suspect-portrait">${suspect.name.charAt(0)}</div>
+            <div class="suspect-portrait">
+                <div class="role-icon">${roleIcon}</div>
+                <div class="suspect-initial">${suspect.name.charAt(0)}</div>
+            </div>
             <div class="suspect-name">${suspect.name}</div>
+            <div class="suspect-title">${suspect.title}</div>
+            <div class="suspect-role-hint">${suspect.profession}</div>
             <div class="suspect-info">
-                ${suspect.clues.appearance ? `Hair: ${suspect.appearance.hair}, ${suspect.appearance.style}` : 'Appearance: ???'}
+                ${suspect.revealedClues.length > 0 ? `${suspect.revealedClues.length} clues revealed` : 'No clues revealed'}
+            </div>
+            <div class="suspect-visual-hint">
+                <small>🔍 Look closely at their appearance!</small>
             </div>
         `;
         
         suspectCard.addEventListener('click', () => selectSuspect(suspect.id));
+        suspectCard.addEventListener('dblclick', () => showCharacterProfile(suspect.id));
         elements.suspectsGrid.appendChild(suspectCard);
     });
 }
@@ -311,6 +380,59 @@ function selectSuspect(suspectId) {
     // Enable action buttons
     elements.investigateBtn.disabled = false;
     elements.eliminateBtn.disabled = false;
+    
+    // Show character profile
+    showCharacterProfile(suspectId);
+}
+
+// Show character profile modal
+function showCharacterProfile(suspectId) {
+    const suspect = gameState.suspects[suspectId];
+    
+    // Populate profile information
+    document.getElementById('profileName').textContent = suspect.name;
+    document.getElementById('profileTitle').textContent = suspect.title;
+    document.getElementById('profileProfession').textContent = `Profession: ${suspect.profession}`;
+    document.getElementById('profileRelationship').textContent = `Relationship: ${suspect.relationship}`;
+    document.getElementById('profileMotive').textContent = `Motive: ${suspect.motive}`;
+    document.getElementById('profileAppearance').textContent = suspect.appearance;
+    
+    // Populate clues with hidden clue highlighted
+    const cluesContainer = document.getElementById('profileClues');
+    cluesContainer.innerHTML = '';
+    
+    // Add hidden clue first and prominently
+    const hiddenClueItem = document.createElement('div');
+    hiddenClueItem.className = 'profile-clue-item hidden-clue';
+    hiddenClueItem.innerHTML = `
+        <div class="profile-clue-text"><strong>🔍 HIDDEN CLUE:</strong> ${suspect.hiddenClue}</div>
+        <div class="profile-clue-status">🔒 Key Visual Evidence</div>
+    `;
+    cluesContainer.appendChild(hiddenClueItem);
+    
+    // Add regular clues
+    suspect.clues.forEach((clue, index) => {
+        const isRevealed = suspect.revealedClues.includes(index);
+        const clueItem = document.createElement('div');
+        clueItem.className = `profile-clue-item ${isRevealed ? 'revealed' : 'hidden'}`;
+        
+        clueItem.innerHTML = `
+            <div class="profile-clue-text">${clue}</div>
+            <div class="profile-clue-status">
+                ${isRevealed ? '✓ Revealed' : '🔒 Hidden'}
+            </div>
+        `;
+        
+        cluesContainer.appendChild(clueItem);
+    });
+    
+    // Show modal
+    document.getElementById('characterProfileModal').classList.remove('hidden');
+}
+
+// Close character profile modal
+function closeCharacterProfile() {
+    document.getElementById('characterProfileModal').classList.add('hidden');
 }
 
 // Investigate a suspect
@@ -322,41 +444,31 @@ function investigateSuspect() {
     
     const suspect = gameState.suspects[gameState.selectedSuspect];
     
-    // Randomly reveal a clue that hasn't been revealed yet
-    const unrevealedClues = Object.entries(suspect.clues)
-        .filter(([key, revealed]) => !revealed)
-        .map(([key]) => key);
-    
-    if (unrevealedClues.length === 0) {
+    // Check if all clues are already revealed
+    if (suspect.revealedClues.length >= suspect.clues.length) {
         elements.clueDisplay.innerHTML = '<p class="placeholder-text">All clues for this suspect have been revealed!</p>';
         return;
     }
     
-    const randomClueType = unrevealedClues[Math.floor(Math.random() * unrevealedClues.length)];
-    suspect.clues[randomClueType] = true;
+    // Find unrevealed clues
+    const unrevealedClues = suspect.clues.filter((clue, index) => 
+        !suspect.revealedClues.includes(index)
+    );
+    
+    // Randomly select an unrevealed clue
+    const randomClueIndex = Math.floor(Math.random() * unrevealedClues.length);
+    const selectedClue = unrevealedClues[randomClueIndex];
+    const clueIndex = suspect.clues.indexOf(selectedClue);
+    
+    // Add to revealed clues
+    suspect.revealedClues.push(clueIndex);
     
     // Display the clue
-    let clueContent = '';
-    switch (randomClueType) {
-        case 'appearance':
-            clueContent = `Hair: ${suspect.appearance.hair}, ${suspect.appearance.style}. Skin: ${suspect.appearance.skin}. Clothing: ${suspect.appearance.clothing}.`;
-            break;
-        case 'relationship':
-            clueContent = `Relationship with victim: ${suspect.relationship}`;
-            break;
-        case 'motive':
-            clueContent = `Possible motive: ${suspect.motive}`;
-            break;
-        case 'profession':
-            clueContent = `Profession: ${suspect.profession}`;
-            break;
-    }
-    
     const clueItem = document.createElement('div');
     clueItem.className = 'clue-item';
     clueItem.innerHTML = `
-        <div class="clue-type">${randomClueType.charAt(0).toUpperCase() + randomClueType.slice(1)} Clue</div>
-        <div class="clue-content">${clueContent}</div>
+        <div class="clue-type">${suspect.name} - Clue #${suspect.revealedClues.length}</div>
+        <div class="clue-content">${selectedClue}</div>
     `;
     
     elements.clueDisplay.appendChild(clueItem);
@@ -368,39 +480,37 @@ function investigateSuspect() {
 
 // Draw a random clue card
 function drawClueCard() {
-    const randomClueType = clueTypes[Math.floor(Math.random() * clueTypes.length)];
-    const randomSuspect = gameState.suspects[Math.floor(Math.random() * gameState.suspects.length)];
+    // Find suspects with unrevealed clues
+    const suspectsWithClues = gameState.suspects.filter(suspect => 
+        !suspect.isEliminated && suspect.revealedClues.length < suspect.clues.length
+    );
     
-    if (randomSuspect.isEliminated) {
-        elements.clueDisplay.innerHTML = '<p class="placeholder-text">The drawn clue card refers to an eliminated suspect. Draw again!</p>';
+    if (suspectsWithClues.length === 0) {
+        elements.clueDisplay.innerHTML = '<p class="placeholder-text">All clues have been revealed for all suspects!</p>';
         return;
     }
     
-    // Reveal the clue for the random suspect
-    randomSuspect.clues[randomClueType.toLowerCase()] = true;
+    // Randomly select a suspect
+    const randomSuspect = suspectsWithClues[Math.floor(Math.random() * suspectsWithClues.length)];
+    
+    // Find unrevealed clues for this suspect
+    const unrevealedClues = randomSuspect.clues.filter((clue, index) => 
+        !randomSuspect.revealedClues.includes(index)
+    );
+    
+    // Randomly select a clue
+    const randomClue = unrevealedClues[Math.floor(Math.random() * unrevealedClues.length)];
+    const clueIndex = randomSuspect.clues.indexOf(randomClue);
+    
+    // Add to revealed clues
+    randomSuspect.revealedClues.push(clueIndex);
     
     // Display the clue
-    let clueContent = '';
-    switch (randomClueType.toLowerCase()) {
-        case 'appearance':
-            clueContent = `${randomSuspect.name}: Hair: ${randomSuspect.appearance.hair}, ${randomSuspect.appearance.style}. Skin: ${randomSuspect.appearance.skin}. Clothing: ${randomSuspect.appearance.clothing}.`;
-            break;
-        case 'relationship':
-            clueContent = `${randomSuspect.name}: Relationship with victim: ${randomSuspect.relationship}`;
-            break;
-        case 'motive':
-            clueContent = `${randomSuspect.name}: Possible motive: ${randomSuspect.motive}`;
-            break;
-        case 'profession':
-            clueContent = `${randomSuspect.name}: Profession: ${randomSuspect.profession}`;
-            break;
-    }
-    
     const clueItem = document.createElement('div');
     clueItem.className = 'clue-item';
     clueItem.innerHTML = `
-        <div class="clue-type">Random ${randomClueType} Clue</div>
-        <div class="clue-content">${clueContent}</div>
+        <div class="clue-type">Random Clue - ${randomSuspect.name}</div>
+        <div class="clue-content">${randomClue}</div>
     `;
     
     elements.clueDisplay.appendChild(clueItem);
@@ -427,7 +537,7 @@ function eliminateSuspect() {
     // Check if this is the murderer
     if (suspect.isMurderer) {
         gameState.gameOver = true;
-        showGameOver('You Lose!', 'You eliminated the actual murderer. Better luck next time!');
+        showGameOver('You Lose!', `You eliminated the actual murderer! ${suspect.eliminationReason}`);
         return;
     }
     
@@ -438,13 +548,13 @@ function eliminateSuspect() {
     const remainingSuspects = gameState.suspects.filter(s => !s.isEliminated);
     if (remainingSuspects.length === 1 && remainingSuspects[0].isMurderer) {
         gameState.gameOver = true;
-        showGameOver('You Win!', 'Congratulations! You correctly identified the murderer as the last remaining suspect.');
+        showGameOver('You Win!', `Congratulations! You correctly identified Dr. Evelyn Cross as the murderer. ${remainingSuspects[0].eliminationReason}`);
         return;
     }
     
     // Update display
     renderSuspects();
-    elements.clueDisplay.innerHTML = '<p class="placeholder-text">Suspect eliminated. Continue investigating...</p>';
+    elements.clueDisplay.innerHTML = `<p class="placeholder-text">${suspect.name} eliminated: ${suspect.eliminationReason}</p>`;
     
     // Clear selection
     gameState.selectedSuspect = null;
@@ -480,8 +590,7 @@ function startNewCase() {
     elements.caseNumber.textContent = gameState.currentCase;
     
     // Update case description
-    const caseIndex = (gameState.currentCase - 1) % caseDescriptions.length;
-    elements.caseDescription.textContent = caseDescriptions[caseIndex];
+    elements.caseDescription.textContent = caseDescription;
     
     // Generate new suspects
     generateSuspects();
@@ -521,6 +630,8 @@ function handleKeyboard(e) {
             elements.gameOverModal.classList.add('hidden');
         } else if (!elements.pauseMenu.classList.contains('hidden')) {
             elements.pauseMenu.classList.add('hidden');
+        } else if (!document.getElementById('characterProfileModal').classList.contains('hidden')) {
+            closeCharacterProfile();
         } else if (gameState.gameStarted && !gameState.gameOver) {
             elements.pauseMenu.classList.remove('hidden');
         }
@@ -533,7 +644,7 @@ function startGame() {
     gameState.gameOver = false;
     
     // Update case description
-    elements.caseDescription.textContent = caseDescriptions[0];
+    elements.caseDescription.textContent = caseDescription;
     
     // Start timer
     startTimer();
