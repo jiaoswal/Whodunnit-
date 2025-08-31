@@ -1,322 +1,208 @@
-// Supabase Configuration
-const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
-
-// Initialize Supabase client
-let supabase;
-try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} catch (error) {
-    console.warn('Supabase not configured, running in offline mode');
-    supabase = null;
-}
-
 // Game State
-let gameState = {
-    isAuthenticated: false,
-    currentUser: null,
-    currentCase: 1,
-    gameStarted: false,
-    gameOver: false,
-    selectedSuspect: null,
+const gameState = {
     suspects: [],
-    clues: [],
-    gameTimer: 0,
-    timerInterval: null
+    selectedSuspect: null,
+    gameTimer: 15 * 60, // 15 minutes in seconds
+    gameActive: false,
+    eliminatedCount: 0
 };
 
-// Rosewood Manor Murder Mystery - Specific Story Data
+// DOM Elements
+const elements = {
+    timer: document.getElementById('timer'),
+    investigateBtn: document.getElementById('investigateBtn'),
+    eliminateBtn: document.getElementById('eliminateBtn'),
+    newGameBtn: document.getElementById('newGameBtn'),
+    suspectsGrid: document.getElementById('suspectsGrid'),
+    clueDisplay: document.getElementById('clueDisplay'),
+    characterModal: document.getElementById('characterModal'),
+    characterProfile: document.getElementById('characterProfile'),
+    gameOverModal: document.getElementById('gameOverModal'),
+    gameOverTitle: document.getElementById('gameOverTitle'),
+    gameOverMessage: document.getElementById('gameOverMessage'),
+    playAgainBtn: document.getElementById('playAgainBtn'),
+    pauseMenu: document.getElementById('pauseMenu'),
+    resumeBtn: document.getElementById('resumeBtn'),
+    newGameFromPauseBtn: document.getElementById('newGameFromPauseBtn')
+};
+
+// Suspect Data
 const suspectData = {
     suspects: [
         {
             id: 0,
             name: 'Mr. Alfred Gray',
             title: 'The Butler',
-            profession: 'Longtime family servant',
-            relationship: 'Worked for the Beaumont family for 25+ years',
-            motive: 'Clara once threatened to fire him for theft',
-            appearance: 'Tall, thin, with a neatly pressed suit and white gloves',
+            profession: 'Butler & Estate Manager',
+            relationship: 'Long-time servant of the family',
+            motive: 'Potential inheritance or resentment over years of service',
+            appearance: 'Elegant in his uniform, always carrying a silver tray',
             hiddenClue: 'His glove has a small wine stain (important later)',
             isMurderer: false,
             clues: [
-                'A white glove with a wine stain',
-                'Wine glass near the victim, untouched',
-                'Butler seen carrying only wine, not tea',
-                'Clara never drank wine that night',
-                'Poison was not in the wine'
+                'Wine glasses found in the study have his fingerprints',
+                'He was the last person to see Lord Blackwood alive',
+                'His alibi for the time of death is weak',
+                'He has access to all areas of the manor',
+                'His uniform shows signs of recent cleaning'
             ],
-            eliminationReason: 'His glove had wine on it, but the poison was in the tea cup, not the wine.'
+            eliminationReason: 'Proven innocent through alibi verification and lack of motive'
         },
         {
             id: 1,
             name: 'Dr. Evelyn Cross',
             title: 'The Doctor',
-            profession: 'Clara\'s physician',
-            relationship: 'Trusted family doctor',
-            motive: 'Clara had discovered malpractice that could ruin her career',
-            appearance: 'Mid-40s, carries a small leather medical bag, spectacles',
-            hiddenClue: 'A missing vial compartment inside her bag',
+            profession: 'Family Physician',
+            relationship: 'Personal doctor to Lord Blackwood',
+            motive: 'Professional reputation at stake, potential medical malpractice',
+            appearance: 'Wears a white coat, carries medical bag, looks stressed',
+            hiddenClue: 'Her medical bag is missing a vial of sedatives',
             isMurderer: true,
             clues: [
-                'Missing vial of sedatives',
-                'Clara\'s teacup had traces of that sedative',
-                'Doctor served Clara tea that night',
-                'Medical bag has an empty slot',
-                'Sedatives were only accessible to the Doctor'
+                'She prescribed medication to Lord Blackwood recently',
+                'Her medical bag was found open in the study',
+                'She has no alibi for the time of death',
+                'She was seen arguing with Lord Blackwood earlier',
+                'Her fingerprints are on the murder weapon'
             ],
-            eliminationReason: 'A missing vial of sedatives from her medical bag matches the substance in Clara\'s tea.'
+            eliminationReason: 'This would be a mistake - she is the killer!'
         },
         {
             id: 2,
             name: 'James Holloway',
             title: 'The Writer',
-            profession: 'Crime novelist',
-            relationship: 'Clara let him stay at the manor for inspiration',
-            motive: 'Clara planned to expose that his last bestseller copied her family scandal',
-            appearance: 'Messy hair, tweed jacket, notebook and pen always in hand',
-            hiddenClue: 'A sketch in his notebook of the study (with a different glass count)',
+            profession: 'Author & Family Friend',
+            relationship: 'Close friend and business partner',
+            motive: 'Financial disputes over book publishing deals',
+            appearance: 'Disheveled, ink-stained fingers, carries a notebook',
+            hiddenClue: 'His sketchbook contains drawings of the manor layout',
             isMurderer: false,
             clues: [
-                'Sketchbook drawing of study with 2 wine glasses',
-                'His fingerprints only on wine glasses',
-                'No fingerprints of his on the teapot',
-                'The notebook shows wine stains, not tea',
-                'Witness saw him writing outside the study'
+                'He was working on a book about the manor',
+                'His notebook contains detailed observations',
+                'He has financial troubles',
+                'He was seen sketching the study earlier',
+                'His alibi is confirmed by multiple witnesses'
             ],
-            eliminationReason: 'His sketchbook shows 2 wine glasses in the study, but the poison was in tea, not wine. He didn\'t handle tea at all.'
+            eliminationReason: 'Proven innocent through solid alibi and lack of opportunity'
         },
         {
             id: 3,
             name: 'Sophie Marlowe',
-            title: 'The Childhood Friend',
-            profession: 'Runs a small antique shop',
-            relationship: 'Grew up with Clara; friends turned rivals',
-            motive: 'Clara refused to loan Sophie money for her failing shop',
-            appearance: 'Elegant dress, pearl necklace, nervous smile',
-            hiddenClue: 'Her necklace is broken, a bead lies on the study floor',
+            title: 'The Heiress',
+            profession: 'Lord Blackwood\'s Daughter',
+            relationship: 'Daughter and primary heir',
+            motive: 'Inheritance and family disputes',
+            appearance: 'Elegant dress, expensive jewelry, looks concerned',
+            hiddenClue: 'Her pearl necklace is broken (noticed during questioning)',
             isMurderer: false,
             clues: [
-                'Broken pearl bead in the study',
-                'Necklace broke earlier during a small quarrel',
-                'No fingerprints on tea set',
-                'Motive was financial, not violent',
-                'Pearl bead had dust, showing it fell long before death'
+                'She stands to inherit the entire estate',
+                'She was in her room during the murder',
+                'Her alibi is confirmed by the housekeeper',
+                'She has no history of violence',
+                'She was seen crying after discovering the body'
             ],
-            eliminationReason: 'Her broken necklace bead was in the study before the poisoning, but no fingerprints of hers were on the tea set.'
+            eliminationReason: 'Proven innocent through solid alibi and emotional reaction'
         },
         {
             id: 4,
             name: 'Victor Kane',
             title: 'The Business Partner',
-            profession: 'Co-owned a luxury hotel chain with Clara',
-            relationship: 'Business associate',
-            motive: 'Clara was considering dissolving their partnership',
-            appearance: 'Stocky man in a sharp suit, gold watch, cigar in hand',
+            profession: 'Business Associate',
+            relationship: 'Long-time business partner and friend',
+            motive: 'Business disagreements and financial pressure',
+            appearance: 'Well-dressed businessman, carries a briefcase, looks nervous',
             hiddenClue: 'His cigar stub was found in the garden (not near the study)',
             isMurderer: false,
             clues: [
-                'Cigar stub in garden',
-                'Cigar ashes outside confirm location',
-                'Butler saw him pacing in garden',
-                'Time of death confirmed while he was outside',
-                'No trace of poison found on his belongings'
+                'He had a business meeting with Lord Blackwood that evening',
+                'His briefcase contains important documents',
+                'He has financial difficulties',
+                'He was seen smoking in the garden',
+                'His alibi is confirmed by the butler'
             ],
-            eliminationReason: 'His cigar stub was found outside in the garden at the exact estimated time of death.'
+            eliminationReason: 'Proven innocent through solid alibi and lack of opportunity'
         }
     ]
 };
 
-// Case Description for Rosewood Manor
-const caseDescription = "At Rosewood Manor, the wealthy heiress Clara Beaumont was found dead in her study late at night. She appeared to have been poisoned during a small gathering of close acquaintances. Only five people were present at the manor that night — making them the prime suspects. Your goal: Eliminate suspects through clear clues until only the killer remains.";
-
-// DOM Elements
-let elements = {};
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initGame);
 
 // Initialize the game
 function initGame() {
-    console.log('Initializing Whodunnit - Rosewood Manor Mystery...');
-    
-    // Hide loading screen after a brief delay
-    setTimeout(() => {
-        document.getElementById('loadingScreen').classList.add('hidden');
-        showLoginSection();
-    }, 1500);
-    
-    // Initialize DOM elements
-    initializeElements();
-    
-    // Set up event listeners
     setupEventListeners();
-    
-    // Generate initial suspects
-    generateSuspects();
+    startNewGame();
 }
 
-// Initialize DOM element references
-function initializeElements() {
-    elements = {
-        loginSection: document.getElementById('loginSection'),
-        gameSection: document.getElementById('gameSection'),
-        loginForm: document.getElementById('loginForm'),
-        registerForm: document.getElementById('registerForm'),
-        guestPlay: document.getElementById('guestPlay'),
-        investigateBtn: document.getElementById('investigateBtn'),
-        drawClueBtn: document.getElementById('drawClueBtn'),
-        eliminateBtn: document.getElementById('eliminateBtn'),
-        suspectsGrid: document.getElementById('suspectsGrid'),
-        clueDisplay: document.getElementById('clueDisplay'),
-        gameTimer: document.getElementById('gameTimer'),
-        caseNumber: document.getElementById('caseNumber'),
-        caseDescription: document.getElementById('caseDescription'),
-        gameOverModal: document.getElementById('gameOverModal'),
-        pauseMenu: document.getElementById('pauseMenu')
-    };
-}
-
-// Set up event listeners
+// Setup event listeners
 function setupEventListeners() {
-    // Auth form submissions
-    elements.loginForm.addEventListener('submit', handleLogin);
-    elements.registerForm.addEventListener('submit', handleRegister);
+    elements.investigateBtn.addEventListener('click', investigateSuspect);
+    elements.eliminateBtn.addEventListener('click', eliminateSuspect);
+    elements.newGameBtn.addEventListener('click', startNewGame);
+    elements.playAgainBtn.addEventListener('click', startNewGame);
+    elements.resumeBtn.addEventListener('click', resumeGame);
+    elements.newGameFromPauseBtn.addEventListener('click', startNewGame);
     
-    // Guest play
-    elements.guestPlay.addEventListener('click', startGuestGame);
-    
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => switchTab(e.target.dataset.tab));
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
     });
     
-    // Game action buttons
-    elements.investigateBtn.addEventListener('click', investigateSuspect);
-    elements.drawClueBtn.addEventListener('click', drawClueCard);
-    elements.eliminateBtn.addEventListener('click', eliminateSuspect);
-    
-    // Modal buttons
-    document.getElementById('newCaseBtn')?.addEventListener('click', startNewCase);
-    document.getElementById('mainMenuBtn')?.addEventListener('click', showMainMenu);
-    document.getElementById('resumeBtn')?.addEventListener('click', resumeGame);
-    document.getElementById('quitBtn')?.addEventListener('click', quitToMenu);
-    document.getElementById('closeProfileBtn')?.addEventListener('click', closeCharacterProfile);
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', handleKeyboard);
-}
-
-// Tab switching for auth forms
-function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-    
-    if (tab === 'login') {
-        elements.loginForm.classList.remove('hidden');
-        elements.registerForm.classList.add('hidden');
-    } else {
-        elements.loginForm.classList.add('hidden');
-        elements.registerForm.classList.remove('hidden');
-    }
-}
-
-// Show login section
-function showLoginSection() {
-    elements.loginSection.classList.remove('hidden');
-    elements.gameSection.classList.add('hidden');
-}
-
-// Show game section
-function showGameSection() {
-    elements.loginSection.classList.add('hidden');
-    elements.gameSection.classList.remove('hidden');
-    startGame();
-}
-
-// Handle login
-async function handleLogin(e) {
-    e.preventDefault();
-    
-    if (!supabase) {
-        // Offline mode - simulate successful login
-        gameState.isAuthenticated = true;
-        gameState.currentUser = { email: 'guest@example.com', username: 'Guest' };
-        showGameSection();
-        return;
-    }
-    
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
+    // Close modal with X button
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.addEventListener('click', () => {
+            closeBtn.closest('.modal').style.display = 'none';
         });
-        
-        if (error) throw error;
-        
-        gameState.isAuthenticated = true;
-        gameState.currentUser = data.user;
-        showGameSection();
-        
-    } catch (error) {
-        console.error('Login error:', error.message);
-        alert('Login failed: ' + error.message);
-    }
+    });
+    
+    // Pause menu with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && gameState.gameActive) {
+            togglePauseMenu();
+        }
+    });
 }
 
-// Handle register
-async function handleRegister(e) {
-    e.preventDefault();
+// Start a new game
+function startNewGame() {
+    gameState.gameTimer = 15 * 60;
+    gameState.gameActive = true;
+    gameState.selectedSuspect = null;
+    gameState.eliminatedCount = 0;
     
-    if (!supabase) {
-        alert('Registration not available in offline mode');
-        return;
-    }
+    generateSuspects();
+    updateTimer();
+    startTimer();
     
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
-    const username = document.getElementById('username').value;
+    // Hide modals
+    elements.gameOverModal.style.display = 'none';
+    elements.pauseMenu.style.display = 'none';
     
-    try {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: { username }
-            }
-        });
-        
-        if (error) throw error;
-        
-        alert('Registration successful! Please check your email to verify your account.');
-        
-    } catch (error) {
-        console.error('Registration error:', error.message);
-        alert('Registration failed: ' + error.message);
-    }
+    // Reset clue display
+    elements.clueDisplay.innerHTML = '<p class="placeholder-text">Select a suspect to begin your investigation...</p>';
+    
+    // Disable action buttons
+    elements.investigateBtn.disabled = true;
+    elements.eliminateBtn.disabled = true;
 }
 
-// Start guest game
-function startGuestGame() {
-    gameState.isAuthenticated = false;
-    gameState.currentUser = { email: 'guest@example.com', username: 'Guest' };
-    showGameSection();
-}
-
-// Generate suspects for the current case
+// Generate suspects for the game
 function generateSuspects() {
-    gameState.suspects = [...suspectData.suspects];
+    gameState.suspects = suspectData.suspects.map(suspect => ({
+        ...suspect,
+        revealedClues: [],
+        isEliminated: false
+    }));
     
-    // Shuffle the suspects to randomize their positions
+    // Shuffle suspects for variety
     for (let i = gameState.suspects.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [gameState.suspects[i], gameState.suspects[j]] = [gameState.suspects[j], gameState.suspects[i]];
     }
-    
-    // Reset clue revelation status
-    gameState.suspects.forEach(suspect => {
-        suspect.revealedClues = [];
-        suspect.isEliminated = false;
-    });
     
     renderSuspects();
 }
@@ -328,19 +214,26 @@ function renderSuspects() {
     gameState.suspects.forEach(suspect => {
         const suspectCard = document.createElement('div');
         suspectCard.className = 'suspect-card';
-        suspectCard.dataset.suspectId = suspect.id;
+        suspectCard.setAttribute('data-suspect-id', suspect.id);
         
+        // Add selection and elimination classes
+        if (suspect.id === gameState.selectedSuspect) {
+            suspectCard.classList.add('selected');
+        }
         if (suspect.isEliminated) {
             suspectCard.classList.add('eliminated');
         }
         
-        // Create a visual hint icon based on the suspect's role
-        let roleIcon = '🕵️';
-        if (suspect.title.includes('Butler')) roleIcon = '🧤';
-        if (suspect.title.includes('Doctor')) roleIcon = '🩺';
-        if (suspect.title.includes('Writer')) roleIcon = '📝';
-        if (suspect.title.includes('Friend')) roleIcon = '💎';
-        if (suspect.title.includes('Partner')) roleIcon = '🚬';
+        // Role icon mapping
+        const roleIcons = {
+            'The Butler': '👔',
+            'The Doctor': '👩‍⚕️',
+            'The Writer': '✍️',
+            'The Heiress': '👑',
+            'The Business Partner': '💼'
+        };
+        
+        const roleIcon = roleIcons[suspect.title] || '❓';
         
         suspectCard.innerHTML = `
             <div class="suspect-portrait">
@@ -358,15 +251,22 @@ function renderSuspects() {
             </div>
         `;
         
+        // Add event listeners
         suspectCard.addEventListener('click', () => selectSuspect(suspect.id));
         suspectCard.addEventListener('dblclick', () => showCharacterProfile(suspect.id));
+        
         elements.suspectsGrid.appendChild(suspectCard);
     });
 }
 
 // Select a suspect
 function selectSuspect(suspectId) {
-    if (gameState.suspects[suspectId].isEliminated) return;
+    const suspect = gameState.suspects[suspectId];
+    
+    if (suspect.isEliminated) {
+        alert(`${suspect.name} has already been eliminated and cannot be selected.`);
+        return;
+    }
     
     // Remove previous selection
     document.querySelectorAll('.suspect-card').forEach(card => {
@@ -383,56 +283,35 @@ function selectSuspect(suspectId) {
     
     // Show character profile
     showCharacterProfile(suspectId);
+    
+    // Update clue display to show selection and their specific clues
+    updateClueDisplayForSuspect(suspect);
 }
 
-// Show character profile modal
-function showCharacterProfile(suspectId) {
-    const suspect = gameState.suspects[suspectId];
+// Function to update clue display for a specific suspect
+function updateClueDisplayForSuspect(suspect) {
+    let clueDisplayHTML = `<p class="placeholder-text"><strong>🔍 Investigating: ${suspect.name} - ${suspect.title}</strong></p>`;
     
-    // Populate profile information
-    document.getElementById('profileName').textContent = suspect.name;
-    document.getElementById('profileTitle').textContent = suspect.title;
-    document.getElementById('profileProfession').textContent = `Profession: ${suspect.profession}`;
-    document.getElementById('profileRelationship').textContent = `Relationship: ${suspect.relationship}`;
-    document.getElementById('profileMotive').textContent = `Motive: ${suspect.motive}`;
-    document.getElementById('profileAppearance').textContent = suspect.appearance;
+    // Show their specific clues (both revealed and hidden)
+    if (suspect.revealedClues.length > 0) {
+        clueDisplayHTML += `<h4>📋 Clues for ${suspect.name}:</h4>`;
+        suspect.revealedClues.forEach((clueIndex, index) => {
+            if (suspect.clues[clueIndex]) {
+                clueDisplayHTML += `<div class="clue-item"><strong>Clue ${index + 1}:</strong> ${suspect.clues[clueIndex]}</div>`;
+            }
+        });
+    }
     
-    // Populate clues with hidden clue highlighted
-    const cluesContainer = document.getElementById('profileClues');
-    cluesContainer.innerHTML = '';
+    // Show hidden clue hint
+    clueDisplayHTML += `<div class="clue-item hidden-clue"><strong>🔒 Hidden Clue:</strong> ${suspect.hiddenClue}</div>`;
     
-    // Add hidden clue first and prominently
-    const hiddenClueItem = document.createElement('div');
-    hiddenClueItem.className = 'profile-clue-item hidden-clue';
-    hiddenClueItem.innerHTML = `
-        <div class="profile-clue-text"><strong>🔍 HIDDEN CLUE:</strong> ${suspect.hiddenClue}</div>
-        <div class="profile-clue-status">🔒 Key Visual Evidence</div>
-    `;
-    cluesContainer.appendChild(hiddenClueItem);
+    // Show remaining unrevealed clues count
+    const unrevealedCount = suspect.clues.length - suspect.revealedClues.length;
+    if (unrevealedCount > 0) {
+        clueDisplayHTML += `<p class="placeholder-text"><em>${unrevealedCount} more clues to discover for this suspect...</em></p>`;
+    }
     
-    // Add regular clues
-    suspect.clues.forEach((clue, index) => {
-        const isRevealed = suspect.revealedClues.includes(index);
-        const clueItem = document.createElement('div');
-        clueItem.className = `profile-clue-item ${isRevealed ? 'revealed' : 'hidden'}`;
-        
-        clueItem.innerHTML = `
-            <div class="profile-clue-text">${clue}</div>
-            <div class="profile-clue-status">
-                ${isRevealed ? '✓ Revealed' : '🔒 Hidden'}
-            </div>
-        `;
-        
-        cluesContainer.appendChild(clueItem);
-    });
-    
-    // Show modal
-    document.getElementById('characterProfileModal').classList.remove('hidden');
-}
-
-// Close character profile modal
-function closeCharacterProfile() {
-    document.getElementById('characterProfileModal').classList.add('hidden');
+    elements.clueDisplay.innerHTML = clueDisplayHTML;
 }
 
 // Investigate a suspect
@@ -463,11 +342,11 @@ function investigateSuspect() {
     // Add to revealed clues
     suspect.revealedClues.push(clueIndex);
     
-    // Display the clue
+    // Display the clue with clear suspect identification
     const clueItem = document.createElement('div');
     clueItem.className = 'clue-item';
     clueItem.innerHTML = `
-        <div class="clue-type">${suspect.name} - Clue #${suspect.revealedClues.length}</div>
+        <div class="clue-type"><strong>🔍 ${suspect.name} - Clue #${suspect.revealedClues.length}</strong></div>
         <div class="clue-content">${selectedClue}</div>
     `;
     
@@ -476,48 +355,9 @@ function investigateSuspect() {
     
     // Update suspect display
     renderSuspects();
-}
-
-// Draw a random clue card
-function drawClueCard() {
-    // Find suspects with unrevealed clues
-    const suspectsWithClues = gameState.suspects.filter(suspect => 
-        !suspect.isEliminated && suspect.revealedClues.length < suspect.clues.length
-    );
     
-    if (suspectsWithClues.length === 0) {
-        elements.clueDisplay.innerHTML = '<p class="placeholder-text">All clues have been revealed for all suspects!</p>';
-        return;
-    }
-    
-    // Randomly select a suspect
-    const randomSuspect = suspectsWithClues[Math.floor(Math.random() * suspectsWithClues.length)];
-    
-    // Find unrevealed clues for this suspect
-    const unrevealedClues = randomSuspect.clues.filter((clue, index) => 
-        !randomSuspect.revealedClues.includes(index)
-    );
-    
-    // Randomly select a clue
-    const randomClue = unrevealedClues[Math.floor(Math.random() * unrevealedClues.length)];
-    const clueIndex = randomSuspect.clues.indexOf(randomClue);
-    
-    // Add to revealed clues
-    randomSuspect.revealedClues.push(clueIndex);
-    
-    // Display the clue
-    const clueItem = document.createElement('div');
-    clueItem.className = 'clue-item';
-    clueItem.innerHTML = `
-        <div class="clue-type">Random Clue - ${randomSuspect.name}</div>
-        <div class="clue-content">${randomClue}</div>
-    `;
-    
-    elements.clueDisplay.appendChild(clueItem);
-    elements.clueDisplay.scrollTop = elements.clueDisplay.scrollHeight;
-    
-    // Update suspect display
-    renderSuspects();
+    // Update the clue display to show all clues for this suspect
+    updateClueDisplayForSuspect(suspect);
 }
 
 // Eliminate a suspect
@@ -529,168 +369,138 @@ function eliminateSuspect() {
     
     const suspect = gameState.suspects[gameState.selectedSuspect];
     
-    if (suspect.isEliminated) {
-        alert('This suspect has already been eliminated');
-        return;
-    }
-    
-    // Check if this is the murderer
     if (suspect.isMurderer) {
-        gameState.gameOver = true;
-        showGameOver('You Lose!', `You eliminated the actual murderer! ${suspect.eliminationReason}`);
+        // Player eliminated the killer - they lose!
+        endGame(false, 'You eliminated the actual killer! The murderer goes free while an innocent person takes the blame.');
         return;
     }
     
     // Eliminate the suspect
     suspect.isEliminated = true;
-    
-    // Check win condition
-    const remainingSuspects = gameState.suspects.filter(s => !s.isEliminated);
-    if (remainingSuspects.length === 1 && remainingSuspects[0].isMurderer) {
-        gameState.gameOver = true;
-        showGameOver('You Win!', `Congratulations! You correctly identified Dr. Evelyn Cross as the murderer. ${remainingSuspects[0].eliminationReason}`);
-        return;
-    }
-    
-    // Update display
-    renderSuspects();
-    elements.clueDisplay.innerHTML = `<p class="placeholder-text">${suspect.name} eliminated: ${suspect.eliminationReason}</p>`;
+    gameState.eliminatedCount++;
     
     // Clear selection
     gameState.selectedSuspect = null;
-    document.querySelectorAll('.suspect-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    
-    // Disable action buttons
     elements.investigateBtn.disabled = true;
     elements.eliminateBtn.disabled = true;
+    
+    // Update display
+    renderSuspects();
+    
+    // Check win condition
+    if (gameState.eliminatedCount === gameState.suspects.length - 1) {
+        // Only the killer remains - player wins!
+        endGame(true, 'Congratulations! You\'ve successfully identified the killer. Dr. Evelyn Cross is guilty!');
+        return;
+    }
+    
+    // Show elimination message
+    elements.clueDisplay.innerHTML = `
+        <p class="placeholder-text"><strong>❌ ${suspect.name} has been eliminated!</strong></p>
+        <p class="placeholder-text">${suspect.eliminationReason}</p>
+        <p class="placeholder-text">Select another suspect to continue your investigation...</p>
+    `;
 }
 
-// Show game over modal
-function showGameOver(title, message) {
-    document.getElementById('gameOverTitle').textContent = title;
-    document.getElementById('gameOverMessage').textContent = message;
-    elements.gameOverModal.classList.remove('hidden');
+// Show character profile
+function showCharacterProfile(suspectId) {
+    const suspect = gameState.suspects[suspectId];
     
-    // Stop timer
+    elements.characterProfile.innerHTML = `
+        <div class="profile-header">
+            <h2>${suspect.name}</h2>
+            <p>${suspect.title}</p>
+        </div>
+        <div class="profile-content">
+            <div class="profile-section">
+                <h3>Background</h3>
+                <p><strong>Profession:</strong> ${suspect.profession}</p>
+                <p><strong>Relationship:</strong> ${suspect.relationship}</p>
+                <p><strong>Potential Motive:</strong> ${suspect.motive}</p>
+            </div>
+            <div class="profile-section">
+                <h3>Appearance</h3>
+                <p>${suspect.appearance}</p>
+            </div>
+            <div class="profile-section">
+                <h3>Clues</h3>
+                ${suspect.clues.map((clue, index) => {
+                    const isRevealed = suspect.revealedClues.includes(index);
+                    return `
+                        <div class="profile-clue-item ${isRevealed ? '' : 'hidden-clue'}">
+                            <strong>Clue ${index + 1}:</strong> ${clue}
+                            <div class="clue-status">${isRevealed ? '✅ Revealed' : '🔒 Hidden'}</div>
+                        </div>
+                    `;
+                }).join('')}
+                <div class="profile-clue-item hidden-clue">
+                    <strong>🔒 Hidden Clue:</strong> ${suspect.hiddenClue}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    elements.characterModal.style.display = 'block';
+}
+
+// Timer functions
+function startTimer() {
     if (gameState.timerInterval) {
         clearInterval(gameState.timerInterval);
     }
-}
-
-// Start new case
-function startNewCase() {
-    gameState.currentCase++;
-    gameState.gameOver = false;
-    gameState.selectedSuspect = null;
-    gameState.clues = [];
-    
-    // Update case number display
-    elements.caseNumber.textContent = gameState.currentCase;
-    
-    // Update case description
-    elements.caseDescription.textContent = caseDescription;
-    
-    // Generate new suspects
-    generateSuspects();
-    
-    // Reset clue display
-    elements.clueDisplay.innerHTML = '<p class="placeholder-text">Select an action to begin investigating...</p>';
-    
-    // Hide modal
-    elements.gameOverModal.classList.add('hidden');
-    
-    // Start new timer
-    startTimer();
-}
-
-// Show main menu
-function showMainMenu() {
-    elements.gameOverModal.classList.add('hidden');
-    showLoginSection();
-    resetGame();
-}
-
-// Resume game
-function resumeGame() {
-    elements.pauseMenu.classList.add('hidden');
-}
-
-// Quit to menu
-function quitToMenu() {
-    elements.pauseMenu.classList.add('hidden');
-    showMainMenu();
-}
-
-// Handle keyboard shortcuts
-function handleKeyboard(e) {
-    if (e.key === 'Escape') {
-        if (!elements.gameOverModal.classList.contains('hidden')) {
-            elements.gameOverModal.classList.add('hidden');
-        } else if (!elements.pauseMenu.classList.contains('hidden')) {
-            elements.pauseMenu.classList.add('hidden');
-        } else if (!document.getElementById('characterProfileModal').classList.contains('hidden')) {
-            closeCharacterProfile();
-        } else if (gameState.gameStarted && !gameState.gameOver) {
-            elements.pauseMenu.classList.remove('hidden');
-        }
-    }
-}
-
-// Start the game
-function startGame() {
-    gameState.gameStarted = true;
-    gameState.gameOver = false;
-    
-    // Update case description
-    elements.caseDescription.textContent = caseDescription;
-    
-    // Start timer
-    startTimer();
-    
-    // Disable action buttons initially
-    elements.investigateBtn.disabled = true;
-    elements.eliminateBtn.disabled = true;
-}
-
-// Start game timer
-function startTimer() {
-    gameState.gameTimer = 0;
-    updateTimerDisplay();
     
     gameState.timerInterval = setInterval(() => {
-        gameState.gameTimer++;
-        updateTimerDisplay();
+        gameState.gameTimer--;
+        updateTimer();
+        
+        if (gameState.gameTimer <= 0) {
+            endGame(false, 'Time\'s up! The killer has escaped justice.');
+        }
     }, 1000);
 }
 
-// Update timer display
-function updateTimerDisplay() {
+function updateTimer() {
     const minutes = Math.floor(gameState.gameTimer / 60);
     const seconds = gameState.gameTimer % 60;
-    elements.gameTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
-
-// Reset game state
-function resetGame() {
-    gameState = {
-        isAuthenticated: false,
-        currentUser: null,
-        currentCase: 1,
-        gameStarted: false,
-        gameOver: false,
-        selectedSuspect: null,
-        suspects: [],
-        clues: [],
-        gameTimer: 0,
-        timerInterval: null
-    };
+    elements.timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     
-    if (gameState.timerInterval) {
-        clearInterval(gameState.timerInterval);
+    // Change color when time is running low
+    if (gameState.gameTimer <= 300) { // 5 minutes or less
+        elements.timer.style.color = '#ff4444';
+        elements.timer.style.borderColor = '#ff4444';
     }
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', initGame);
+// Pause menu functions
+function togglePauseMenu() {
+    if (elements.pauseMenu.style.display === 'block') {
+        elements.pauseMenu.style.display = 'none';
+    } else {
+        elements.pauseMenu.style.display = 'block';
+    }
+}
+
+function resumeGame() {
+    elements.pauseMenu.style.display = 'none';
+}
+
+// End game
+function endGame(won, message) {
+    gameState.gameActive = false;
+    clearInterval(gameState.timerInterval);
+    
+    elements.gameOverTitle.textContent = won ? '🎉 Case Solved!' : '💀 Case Failed';
+    elements.gameOverTitle.style.color = won ? '#4CAF50' : '#f44336';
+    elements.gameOverMessage.textContent = message;
+    
+    elements.gameOverModal.style.display = 'block';
+}
+
+// Debug function to show suspect states
+function debugSuspectStates() {
+    console.log('=== SUSPECT STATES ===');
+    gameState.suspects.forEach(suspect => {
+        console.log(`${suspect.name}: Eliminated=${suspect.isEliminated}, Clues=${suspect.revealedClues.length}/${suspect.clues.length}`);
+    });
+    console.log('===========================');
+}

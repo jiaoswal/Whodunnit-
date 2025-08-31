@@ -3,156 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whodunnit - Rosewood Manor Mystery</title>
+    <title>🔍 Murder Mystery Manor</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Login Section -->
-    <div id="loginSection" class="login-section">
-        <div class="login-container">
-            <h1>Whodunnit</h1>
-            <p class="subtitle">Rosewood Manor Mystery</p>
-            
-            <div class="auth-tabs">
-                <button class="tab-btn active" data-tab="login">Login</button>
-                <button class="tab-btn" data-tab="register">Register</button>
-            </div>
-            
-            <form id="loginForm" class="auth-form">
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
-                <button type="submit" class="btn-primary">Login</button>
-            </form>
-            
-            <form id="registerForm" class="auth-form hidden">
-                <input type="email" id="registerEmail" placeholder="Email" required>
-                <input type="password" id="registerPassword" placeholder="Password" required>
-                <input type="text" id="username" placeholder="Username" required>
-                <button type="submit" class="btn-primary">Register</button>
-            </form>
-            
-            <button id="guestPlay" class="btn-secondary">Play as Guest</button>
-        </div>
-    </div>
+    <!-- Game Header -->
+    <header class="game-header">
+        <h1>🔍 Murder Mystery Manor</h1>
+        <p class="subtitle">Who killed Lord Blackwood?</p>
+    </header>
 
-    <!-- Game Section -->
-    <div id="gameSection" class="game-section hidden">
-        <!-- Header -->
-        <header class="game-header">
-            <h1>Whodunnit - Rosewood Manor</h1>
-            <div class="game-info">
-                <span class="timer">Time: <span id="gameTimer">00:00</span></span>
-                <span class="case-number">Case #<span id="caseNumber">1</span></span>
-            </div>
-        </header>
-
+    <!-- Main Game Container -->
+    <div class="game-container">
         <!-- Case Briefing -->
-        <div class="case-briefing">
-            <h2>Case Briefing</h2>
-            <p id="caseDescription">At Rosewood Manor, the wealthy heiress Clara Beaumont was found dead in her study late at night. She appeared to have been poisoned during a small gathering of close acquaintances. Only five people were present at the manor that night — making them the prime suspects. Your goal: Eliminate suspects through clear clues until only the killer remains.</p>
+        <section class="case-briefing">
+            <h2>📋 Case File</h2>
+            <div class="case-summary">
+                <p><strong>Victim:</strong> Lord Reginald Blackwood</p>
+                <p><strong>Location:</strong> Blackwood Manor</p>
+                <p><strong>Time:</strong> Last night, around 11 PM</p>
+                <p><strong>Your Mission:</strong> Find the killer by investigating suspects and collecting clues!</p>
+            </div>
             <div class="case-instructions">
-                <h3>🔍 How to Play:</h3>
-                <ul>
-                    <li><strong>Click a suspect</strong> to select them and view their profile</li>
-                    <li><strong>Double-click a suspect</strong> to see detailed information including hidden visual clues</li>
-                    <li><strong>Investigate</strong> to reveal clues one by one</li>
-                    <li><strong>Eliminate</strong> suspects when you're confident they're innocent</li>
-                    <li><strong>Look closely at appearances</strong> - each character has visual hints about their role!</li>
-                </ul>
-                <p class="warning">⚠️ <strong>Warning:</strong> Don't eliminate the actual murderer or you'll lose!</p>
+                <h3>🎯 How to Play:</h3>
+                <ol>
+                    <li><strong>Click on a suspect</strong> to select them</li>
+                    <li><strong>Investigate</strong> to reveal their clues</li>
+                    <li><strong>Eliminate</strong> innocent suspects</li>
+                    <li><strong>Find the killer</strong> before time runs out!</li>
+                </ol>
             </div>
-        </div>
+        </section>
 
-        <!-- Main Game Area -->
-        <div class="game-container">
-            <!-- Suspect Gallery -->
-            <div class="suspect-gallery">
-                <h3>Suspects</h3>
-                <p class="suspect-instructions">Click to select a suspect, double-click to view detailed profile</p>
-                <div class="suspects-grid" id="suspectsGrid">
-                    <!-- Suspects will be generated here -->
-                </div>
+        <!-- Game Controls -->
+        <section class="game-controls">
+            <div class="timer-section">
+                <h3>⏰ Time Remaining</h3>
+                <div id="timer" class="timer">15:00</div>
             </div>
+            <div class="action-buttons">
+                <button id="investigateBtn" class="btn btn-primary" disabled>🔍 Investigate</button>
+                <button id="eliminateBtn" class="btn btn-danger" disabled>❌ Eliminate</button>
+                <button id="newGameBtn" class="btn btn-secondary">🔄 New Game</button>
+            </div>
+        </section>
 
-            <!-- Game Controls -->
-            <div class="game-controls">
-                <div class="action-buttons">
-                    <button id="investigateBtn" class="btn-action">Investigate Suspect</button>
-                    <button id="drawClueBtn" class="btn-action">Draw Clue Card</button>
-                    <button id="eliminateBtn" class="btn-action">Eliminate Suspect</button>
-                </div>
-                
-                <div class="clue-panel">
-                    <h3>Clues & Information</h3>
-                    <div id="clueDisplay" class="clue-display">
-                        <p class="placeholder-text">Select an action to begin investigating...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Suspects Gallery -->
+        <section class="suspects-section">
+            <h2>👥 Suspects</h2>
+            <div id="suspectsGrid" class="suspects-grid"></div>
+        </section>
 
-        <!-- Game Over Modal -->
-        <div id="gameOverModal" class="modal hidden">
-            <div class="modal-content">
-                <h2 id="gameOverTitle">Game Over</h2>
-                <p id="gameOverMessage"></p>
-                <div class="modal-buttons">
-                    <button id="newCaseBtn" class="btn-primary">New Case</button>
-                    <button id="mainMenuBtn" class="btn-secondary">Main Menu</button>
-                </div>
+        <!-- Clues & Investigation -->
+        <section class="investigation-section">
+            <h2>🔍 Investigation</h2>
+            <div id="clueDisplay" class="clue-display">
+                <p class="placeholder-text">Select a suspect to begin your investigation...</p>
             </div>
-        </div>
+        </section>
+    </div>
 
-        <!-- Character Profile Modal -->
-        <div id="characterProfileModal" class="modal hidden">
-            <div class="modal-content character-profile">
-                <div class="profile-header">
-                    <h2 id="profileName"></h2>
-                    <p id="profileTitle"></p>
-                </div>
-                <div class="profile-content">
-                    <div class="profile-section">
-                        <h3>Background</h3>
-                        <p id="profileProfession"></p>
-                        <p id="profileRelationship"></p>
-                        <p id="profileMotive"></p>
-                    </div>
-                    <div class="profile-section">
-                        <h3>Appearance</h3>
-                        <p id="profileAppearance"></p>
-                    </div>
-                    <div class="profile-section">
-                        <h3>Clues</h3>
-                        <div id="profileClues"></div>
-                    </div>
-                </div>
-                <div class="modal-buttons">
-                    <button id="closeProfileBtn" class="btn-secondary">Close</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pause Menu -->
-        <div id="pauseMenu" class="pause-menu hidden">
-            <div class="pause-content">
-                <h3>Game Paused</h3>
-                <button id="resumeBtn" class="btn-primary">Resume</button>
-                <button id="settingsBtn" class="btn-secondary">Settings</button>
-                <button id="quitBtn" class="btn-secondary">Quit to Menu</button>
-            </div>
+    <!-- Character Profile Modal -->
+    <div id="characterModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="characterProfile"></div>
         </div>
     </div>
 
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-content">
-            <h2>Whodunnit - Rosewood Manor Mystery</h2>
-            <p>Loading...</p>
-            <div class="loading-spinner"></div>
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <h2 id="gameOverTitle"></h2>
+            <p id="gameOverMessage"></p>
+            <button id="playAgainBtn" class="btn btn-primary">Play Again</button>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Pause Menu -->
+    <div id="pauseMenu" class="modal">
+        <div class="modal-content">
+            <h2>⏸️ Game Paused</h2>
+            <button id="resumeBtn" class="btn btn-primary">Resume</button>
+            <button id="newGameFromPauseBtn" class="btn btn-secondary">New Game</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
